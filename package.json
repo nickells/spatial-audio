@@ -1,0 +1,29 @@
+{
+  "name": "frontend-prototyper",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "webpack --watch & http-server",
+    "build": "webpack && open index.html",
+    "kill-live-reload": "kill -9 $(lsof -ti tcp:35729)",
+    "kill-http-server": "kill -9 $(lsof -ti tcp:8080)"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "eslint": "^3.19.0",
+    "eslint-config-airbnb-base": "^11.2.0",
+    "eslint-plugin-import": "^2.3.0",
+    "extract-text-webpack-plugin": "^2.1.2",
+    "less": "^2.7.2",
+    "less-loader": "^4.0.4",
+    "webpack": "^2.6.1"
+  },
+  "dependencies": {
+    "css-loader": "^0.28.4",
+    "raw-loader": "^0.5.1",
+    "save-dev": "^2.0.0",
+    "webpack-livereload-plugin": "^0.11.0"
+  }
+}
