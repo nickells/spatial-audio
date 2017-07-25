@@ -9,14 +9,18 @@ body {
   height: 100vh;
 }
 
-#you {
-  user-select: none;
-  position: absolute;
 
+.is-dragging & *:not(.is-being-dragged) {
+  pointer-events: none;
 }
 
+#you,
 .speaker {
   -webkit-user-select: none;
   position: absolute;
-  -webkit-cursor: grab;
+  cursor: -webkit-grab;
+
+  &.is-being-dragged {
+    cursor: -webkit-grabbing;
+  }
 }
