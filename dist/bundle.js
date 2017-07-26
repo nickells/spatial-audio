@@ -63,11 +63,240 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 4);
+/******/ 	return __webpack_require__(__webpack_require__.s = 1);
 /******/ })
 /************************************************************************/
 /******/ ([
 /* 0 */
+/***/ (function(module, exports) {
+
+module.exports = "<!DOCTYPE html>\n<html>\n<head>\n  <title></title>\n  <link rel=\"stylesheet\" type=\"text/css\" href=\"dist/styles.css\">\n</head>\n<body>\n\n<div id=\"you\">🙂</div>\n<script src=\"dist/bundle.js\"></script>\n<script src=\"http://localhost:35729/livereload.js\"></script>\n\n</body>\n</html>"
+
+/***/ }),
+/* 1 */
+/***/ (function(module, exports, __webpack_require__) {
+
+// require index.html so livereload will watch it
+const index = __webpack_require__(0) // eslint-disable-line no-unused-vars
+const { canDragDrop, calculateInitialPositions, canDoubleClick } = __webpack_require__(2)
+const URLS = __webpack_require__(3)
+const audios = __webpack_require__(4)
+
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)() // define audio context
+const $player = document.getElementById('you')
+
+let sunglasses = false
+
+audioCtx.listener.setPosition(0, 0, 0);
+
+// function createListener(audioBuffer, trackName) {
+//   navigator.mediaDevices.getUserMedia({audio: true, video: true})
+//   .then(stream => {
+//     const source = audioCtx.createMediaStreamSource(stream)
+//   })
+// }
+
+function prepareTrack(audioBuffer, trackName) {
+  const source = audioCtx.createBufferSource()
+  source.buffer = audioBuffer;
+
+  const panner = audioCtx.createPanner()
+  const gain = audioCtx.createGain()
+
+  const { x, z } = audios[trackName].position
+
+  panner.setPosition(x / 100, 0, z / 100)
+
+  // create analyser
+  const analyser = audioCtx.createAnalyser()
+  analyser.fftSize = 32
+  audios[trackName].analyser = {
+    instance: analyser,
+    dataArray: new Uint8Array(analyser.frequencyBinCount),
+  }
+  audios[trackName].gainNode = gain
+
+  source.connect(gain)
+  gain.connect(analyser)
+  analyser.connect(panner)
+  panner.connect(audioCtx.destination)
+
+  audios[trackName].panner = panner
+  audios[trackName].source = source
+  source.loop = true
+
+  if (Math.random() > 0.3) toggleMute(audios[trackName])
+
+  return source
+}
+
+canDragDrop($player, ({ relativeX, relativeY }) => {
+  audioCtx.listener.setPosition(relativeX / 100, 0, relativeY / 100)
+})
+
+canDoubleClick($player, () => {
+  sunglasses = !sunglasses
+  if (sunglasses) $player.innerHTML = '😌'
+  else $player.innerHTML = '🙂'
+})
+
+function createLoadingElement(trackName) {
+  const newDiv = document.createElement('div')
+  newDiv.classList.add('speaker')
+  newDiv.style.transform = `
+    translate(${audios[trackName].position.x}px, ${audios[trackName].position.z}px)
+    scale(${1.0})`
+
+  newDiv.innerHTML = '⏳'
+
+  audios[trackName].elem = newDiv
+  document.body.append(newDiv)
+  return Promise.resolve()
+}
+
+function toggleMute(audioTrack){
+  audioTrack.muted = !audioTrack.muted
+  if (audioTrack.muted) {
+    audioTrack.gainNode.gain.value = 0
+    audioTrack.elem.style.opacity = 0.5
+  } else {
+    audioTrack.gainNode.gain.value = 1
+    audioTrack.elem.style.opacity = 1.0
+  }
+}
+
+function createTrackElement(track) {
+  const trackName = track.track
+  const trackDiv = audios[trackName].elem
+  trackDiv.classList.add('speaker')
+  trackDiv.innerHTML = track.icon
+
+
+  canDragDrop(trackDiv, ({ relativeX, relativeY }) => {
+    audios[trackName].position = {
+      x: relativeX,
+      z: relativeY,
+    }
+    audios[trackName].panner.setPosition(relativeX / 100, 0, relativeY / 100)
+  })
+
+  canDoubleClick(trackDiv, (e) => {
+    toggleMute(audios[trackName])
+  })
+
+  return audios[trackName].source
+}
+
+
+function drawLoop() {
+  Object.keys(audios).forEach((trackName) => {
+    const audio = audios[trackName]
+    audio.analyser.instance.getByteTimeDomainData(audio.analyser.dataArray)
+    const max = Math.max.apply(null, audio.analyser.dataArray) / 128
+
+    const { x, z: y } = audio.position
+    audio.elem.style.transform = `translate3d(${x}px, ${y}px, 0px) scale(${max})`
+  })
+  setTimeout(() => {
+    requestAnimationFrame(drawLoop);
+  }, 1000 / 60)
+}
+
+
+Promise.all(URLS.map((URL, i) => {
+  const trackName = URL.track
+  const { z, x } = calculateInitialPositions(i)
+
+  audios[trackName] = {
+    elem: undefined,
+    source: undefined,
+    position: { z, x },
+    muted: false
+  }
+
+  return createLoadingElement(trackName)
+  .then(() => window.fetch(trackName))
+  .then(res => res.arrayBuffer())
+  .then(arrayBuffer => audioCtx.decodeAudioData(arrayBuffer))
+  .then(decodedBuffer => prepareTrack(decodedBuffer, trackName))
+  .then(res => createTrackElement(URL))
+}))
+.then((audioSources) => {
+  audioSources.forEach(source => source.start())
+  drawLoop()
+})
+
+
+/***/ }),
+/* 2 */
+/***/ (function(module, exports, __webpack_require__) {
+
+const URLS = __webpack_require__(3)
+
+function canDragDrop($elem, onDrag) {
+  let isGrabbing = false
+
+  $elem.addEventListener('mousedown', (e) => {
+    isGrabbing = true
+    document.body.classList.add('is-dragging')
+    $elem.classList.add('is-being-dragged')
+  })
+  $elem.addEventListener('mouseup', (e) => {
+    isGrabbing = false
+    document.body.classList.remove('is-dragging')
+    $elem.classList.remove('is-being-dragged')
+  })
+  window.addEventListener('mousemove', (e) => {
+    if (!isGrabbing) return
+    const relativeX = e.pageX - $elem.offsetLeft - ($elem.clientWidth / 2)
+    const relativeY = e.pageY - $elem.offsetTop - ($elem.clientHeight / 2)
+    $elem.style.transform = `translate(${relativeX}px, ${relativeY}px)`
+    onDrag && onDrag({
+      relativeX,
+      relativeY,
+    })
+  })
+}
+
+function canDoubleClick($elem, onDoubleClick) {
+  let isWaitingForSecondClick = false
+  $elem.addEventListener('click', (e) => {
+    if (isWaitingForSecondClick){
+      onDoubleClick && onDoubleClick(e)
+    }
+    isWaitingForSecondClick = true
+    setTimeout(() => {
+      isWaitingForSecondClick = false
+    }, 200)
+  })
+}
+
+function toRadians(angle) {
+  return angle * (Math.PI / 180)
+}
+
+function calculateInitialPositions(index) {
+  const total = URLS.length
+  // const deg = 180 + ((180 / (total - 1)) * index)
+  const deg = ((360 / (total)) * index)
+  const radius = Math.min((window.innerWidth / 2) * 0.5, 500)
+  return {
+    x: 0 + radius * Math.cos(toRadians(deg)),
+    z: radius * Math.sin(toRadians(deg)),
+  }
+}
+
+
+module.exports = {
+  canDragDrop,
+  toRadians,
+  canDoubleClick,
+  calculateInitialPositions
+}
+
+
+/***/ }),
+/* 3 */
 /***/ (function(module, exports) {
 
 const URLS = [
@@ -120,10 +349,10 @@ const Ambience = [
     track: 'ambience/Ocean Waves.mp3',
     icon: '🌊',
   },
-  {
-    track: 'ambience/Plane.mp3',
-    icon: '🛩',
-  },
+  // {
+  //   track: 'ambience/Plane.mp3',
+  //   icon: '🛩',
+  // },
   {
     track: 'ambience/Rumble.mp3',
     icon: '💢',
@@ -145,13 +374,7 @@ const Ambience = [
 module.exports = Ambience
 
 /***/ }),
-/* 1 */
-/***/ (function(module, exports) {
-
-module.exports = "<!DOCTYPE html>\n<html>\n<head>\n  <title></title>\n  <link rel=\"stylesheet\" type=\"text/css\" href=\"dist/styles.css\">\n</head>\n<body>\n\n<div id=\"you\">🙂</div>\n<script src=\"dist/bundle.js\"></script>\n<script src=\"http://localhost:35729/livereload.js\"></script>\n\n</body>\n</html>"
-
-/***/ }),
-/* 2 */
+/* 4 */
 /***/ (function(module, exports) {
 
 const audios = {
@@ -159,213 +382,6 @@ const audios = {
 }
 
 module.exports = audios
-
-
-/***/ }),
-/* 3 */
-/***/ (function(module, exports, __webpack_require__) {
-
-const URLS = __webpack_require__(0)
-
-function canDragDrop($elem, onDrag) {
-  let isGrabbing = false
-
-  $elem.addEventListener('mousedown', (e) => {
-    isGrabbing = true
-    document.body.classList.add('is-dragging')
-    $elem.classList.add('is-being-dragged')
-  })
-  $elem.addEventListener('mouseup', (e) => {
-    isGrabbing = false
-    document.body.classList.remove('is-dragging')
-    $elem.classList.remove('is-being-dragged')
-  })
-  window.addEventListener('mousemove', (e) => {
-    if (!isGrabbing) return
-    const relativeX = e.pageX - $elem.offsetLeft - ($elem.clientWidth / 2)
-    const relativeY = e.pageY - $elem.offsetTop - ($elem.clientHeight / 2)
-    $elem.style.transform = `translate(${relativeX}px, ${relativeY}px)`
-    onDrag && onDrag({
-      relativeX,
-      relativeY,
-    })
-  })
-}
-
-function canDoubleClick($elem, onDoubleClick) {
-  let isWaitingForSecondClick = false
-  $elem.addEventListener('click', (e) => {
-    if (isWaitingForSecondClick){
-      onDoubleClick && onDoubleClick(e)
-    }
-    isWaitingForSecondClick = true
-    setTimeout(() => {
-      isWaitingForSecondClick = false
-    }, 200)
-  })
-}
-
-function toRadians(angle) {
-  return angle * (Math.PI / 180)
-}
-
-function calculateInitialPositions(index) {
-  const total = URLS.length
-  const deg = 180 + ((180 / (total - 1)) * index)
-  const radius = Math.min((window.innerWidth / 2) * 0.5, 500)
-  return {
-    x: 0 + radius * Math.cos(toRadians(deg)),
-    z: radius * Math.sin(toRadians(deg)),
-  }
-}
-
-
-module.exports = {
-  canDragDrop,
-  toRadians,
-  canDoubleClick,
-  calculateInitialPositions
-}
-
-
-/***/ }),
-/* 4 */
-/***/ (function(module, exports, __webpack_require__) {
-
-// require index.html so livereload will watch it
-const index = __webpack_require__(1) // eslint-disable-line no-unused-vars
-const { canDragDrop, calculateInitialPositions, canDoubleClick } = __webpack_require__(3)
-const URLS = __webpack_require__(0)
-const audios = __webpack_require__(2)
-
-const audioCtx = new (window.AudioContext || window.webkitAudioContext)() // define audio context
-const $player = document.getElementById('you')
-
-let sunglasses = false
-
-audioCtx.listener.setPosition(0, 0, 0);
-
-function prepareTrack(audioBuffer, trackName) {
-  const source = audioCtx.createBufferSource()
-  source.buffer = audioBuffer;
-
-  const panner = audioCtx.createPanner()
-  const gain = audioCtx.createGain()
-
-  const { x, z } = audios[trackName].position
-
-  panner.setPosition(x / 100, 0, z / 100)
-
-  // create analyser
-  const analyser = audioCtx.createAnalyser()
-  analyser.fftSize = 32
-  audios[trackName].analyser = {
-    instance: analyser,
-    dataArray: new Uint8Array(analyser.frequencyBinCount),
-  }
-  audios[trackName].gainNode = gain
-
-  source.connect(gain)
-  gain.connect(analyser)
-  analyser.connect(panner)
-  panner.connect(audioCtx.destination)
-
-  audios[trackName].panner = panner
-  audios[trackName].source = source
-  source.loop = true
-
-  return source
-}
-
-canDragDrop($player, ({ relativeX, relativeY }) => {
-  audioCtx.listener.setPosition(relativeX / 100, 0, relativeY / 100)
-})
-
-canDoubleClick($player, () => {
-  sunglasses = !sunglasses
-  if (sunglasses) $player.innerHTML = '😌'
-  else $player.innerHTML = '🙂'
-})
-
-function createLoadingElement(trackName) {
-  const newDiv = document.createElement('div')
-  newDiv.classList.add('speaker')
-  newDiv.style.transform = `
-    translate(${audios[trackName].position.x}px, ${audios[trackName].position.z}px)
-    scale(${1.0})`
-
-  newDiv.innerHTML = '⏳'
-
-  audios[trackName].elem = newDiv
-  document.body.append(newDiv)
-  return Promise.resolve()
-}
-
-function createTrackElement(track) {
-  const trackName = track.track
-  const trackDiv = audios[trackName].elem
-  trackDiv.classList.add('speaker')
-  trackDiv.innerHTML = track.icon
-
-
-  canDragDrop(trackDiv, ({ relativeX, relativeY }) => {
-    audios[trackName].position = {
-      x: relativeX,
-      z: relativeY,
-    }
-    audios[trackName].panner.setPosition(relativeX / 100, 0, relativeY / 100)
-  })
-
-  canDoubleClick(trackDiv, (e) => {
-    audios[trackName].muted = !audios[trackName].muted
-    if (audios[trackName].muted) {
-      audios[trackName].gainNode.gain.value = 0
-    } else {
-      audios[trackName].gainNode.gain.value = 1
-    }
-  })
-
-  return audios[trackName].source
-}
-
-
-function drawLoop() {
-  Object.keys(audios).forEach((trackName) => {
-    const audio = audios[trackName]
-    audio.analyser.instance.getByteTimeDomainData(audio.analyser.dataArray)
-    const max = Math.max.apply(null, audio.analyser.dataArray) / 128
-
-    const { x, z: y } = audio.position
-    audio.elem.style.transform = `translate3d(${x}px, ${y}px, 0px) scale(${max})`
-  })
-  setTimeout(() => {
-    requestAnimationFrame(drawLoop);
-  }, 1000 / 60)
-}
-
-
-Promise.all(URLS.map((URL, i) => {
-  const trackName = URL.track
-  const { z, x } = calculateInitialPositions(i)
-
-  audios[trackName] = {
-    elem: undefined,
-    source: undefined,
-    position: { z, x },
-    muted: false
-  }
-
-  return createLoadingElement(trackName)
-  .then(() => window.fetch(trackName))
-  .then(res => res.arrayBuffer())
-  .then(arrayBuffer => audioCtx.decodeAudioData(arrayBuffer))
-  .then(decodedBuffer => prepareTrack(decodedBuffer, trackName))
-  .then(res => createTrackElement(URL))
-}))
-.then((audioSources) => {
-  audioSources.forEach(source => source.start())
-  drawLoop()
-})
 
 
 /***/ })

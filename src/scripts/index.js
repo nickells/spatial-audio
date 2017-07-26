@@ -11,6 +11,13 @@ let sunglasses = false
 
 audioCtx.listener.setPosition(0, 0, 0);
 
+// function createListener(audioBuffer, trackName) {
+//   navigator.mediaDevices.getUserMedia({audio: true, video: true})
+//   .then(stream => {
+//     const source = audioCtx.createMediaStreamSource(stream)
+//   })
+// }
+
 function prepareTrack(audioBuffer, trackName) {
   const source = audioCtx.createBufferSource()
   source.buffer = audioBuffer;
@@ -40,6 +47,8 @@ function prepareTrack(audioBuffer, trackName) {
   audios[trackName].source = source
   source.loop = true
 
+  if (Math.random() > 0.3) toggleMute(audios[trackName])
+
   return source
 }
 
@@ -67,6 +76,17 @@ function createLoadingElement(trackName) {
   return Promise.resolve()
 }
 
+function toggleMute(audioTrack){
+  audioTrack.muted = !audioTrack.muted
+  if (audioTrack.muted) {
+    audioTrack.gainNode.gain.value = 0
+    audioTrack.elem.style.opacity = 0.5
+  } else {
+    audioTrack.gainNode.gain.value = 1
+    audioTrack.elem.style.opacity = 1.0
+  }
+}
+
 function createTrackElement(track) {
   const trackName = track.track
   const trackDiv = audios[trackName].elem
@@ -83,12 +103,7 @@ function createTrackElement(track) {
   })
 
   canDoubleClick(trackDiv, (e) => {
-    audios[trackName].muted = !audios[trackName].muted
-    if (audios[trackName].muted) {
-      audios[trackName].gainNode.gain.value = 0
-    } else {
-      audios[trackName].gainNode.gain.value = 1
-    }
+    toggleMute(audios[trackName])
   })
 
   return audios[trackName].source

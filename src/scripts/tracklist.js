@@ -48,10 +48,10 @@ const Ambience = [
     track: 'ambience/Ocean Waves.mp3',
     icon: '🌊',
   },
-  {
-    track: 'ambience/Plane.mp3',
-    icon: '🛩',
-  },
+  // {
+  //   track: 'ambience/Plane.mp3',
+  //   icon: '🛩',
+  // },
   {
     track: 'ambience/Rumble.mp3',
     icon: '💢',

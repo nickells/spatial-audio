@@ -44,7 +44,8 @@ function toRadians(angle) {
 
 function calculateInitialPositions(index) {
   const total = URLS.length
-  const deg = 180 + ((180 / (total - 1)) * index)
+  // const deg = 180 + ((180 / (total - 1)) * index)
+  const deg = ((360 / (total)) * index)
   const radius = Math.min((window.innerWidth / 2) * 0.5, 500)
   return {
     x: 0 + radius * Math.cos(toRadians(deg)),
