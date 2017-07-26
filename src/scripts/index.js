@@ -49,7 +49,7 @@ canDragDrop($player, ({ relativeX, relativeY }) => {
 
 canDoubleClick($player, () => {
   sunglasses = !sunglasses
-  if (sunglasses) $player.innerHTML = '😎'
+  if (sunglasses) $player.innerHTML = '😌'
   else $player.innerHTML = '🙂'
 })
 
@@ -67,10 +67,11 @@ function createLoadingElement(trackName) {
   return Promise.resolve()
 }
 
-function createTrackElement(trackName) {
+function createTrackElement(track) {
+  const trackName = track.track
   const trackDiv = audios[trackName].elem
   trackDiv.classList.add('speaker')
-  trackDiv.innerHTML = '⌛'
+  trackDiv.innerHTML = track.icon
 
 
   canDragDrop(trackDiv, ({ relativeX, relativeY }) => {
@@ -84,10 +85,8 @@ function createTrackElement(trackName) {
   canDoubleClick(trackDiv, (e) => {
     audios[trackName].muted = !audios[trackName].muted
     if (audios[trackName].muted) {
-      audios[trackName].elem.innerHTML = '🔇'
       audios[trackName].gainNode.gain.value = 0
     } else {
-      audios[trackName].elem.innerHTML = '🔉'
       audios[trackName].gainNode.gain.value = 1
     }
   })
@@ -102,10 +101,6 @@ function drawLoop() {
     audio.analyser.instance.getByteTimeDomainData(audio.analyser.dataArray)
     const max = Math.max.apply(null, audio.analyser.dataArray) / 128
 
-    if (audio.muted) audio.elem.innerHTML = '🔇'
-    else if (max < 1.0) audio.elem.innerHTML =  '🔈'
-    else audio.elem.innerHTML = '🔉'
-
     const { x, z: y } = audio.position
     audio.elem.style.transform = `translate3d(${x}px, ${y}px, 0px) scale(${max})`
   })
@@ -116,7 +111,7 @@ function drawLoop() {
 
 
 Promise.all(URLS.map((URL, i) => {
-  const trackName = URLS[i]
+  const trackName = URL.track
   const { z, x } = calculateInitialPositions(i)
 
   audios[trackName] = {
@@ -127,11 +122,11 @@ Promise.all(URLS.map((URL, i) => {
   }
 
   return createLoadingElement(trackName)
-  .then(() => window.fetch(URL))
+  .then(() => window.fetch(trackName))
   .then(res => res.arrayBuffer())
   .then(arrayBuffer => audioCtx.decodeAudioData(arrayBuffer))
   .then(decodedBuffer => prepareTrack(decodedBuffer, trackName))
-  .then(res => createTrackElement(trackName))
+  .then(res => createTrackElement(URL))
 }))
 .then((audioSources) => {
   audioSources.forEach(source => source.start())
