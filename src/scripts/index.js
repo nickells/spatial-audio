@@ -87,7 +87,7 @@ function toRadians (angle) {
 function calculatePositions(index){
   const total = URLS.length
   const deg = 360 - ((180 / (total - 1)) * index)
-  const radius = 150
+  const radius = Math.min((window.innerWidth / 2) * 0.5, 500)
   return {
     x: 0 + radius * Math.cos(toRadians(deg)),
     z: radius * Math.sin(toRadians(deg))
