@@ -35,6 +35,7 @@ function prepareTrack(audioBuffer, trackName) {
   panner.connect(audioCtx.destination)
 
   audios[trackName].panner = panner
+  audios[trackName].source = source
   source.loop = true
 
   return source
@@ -44,17 +45,27 @@ canDragDrop($player, ({ relativeX, relativeY }) => {
   audioCtx.listener.setPosition(relativeX / 100, 0, relativeY / 100)
 })
 
-
-function createTrackElement(trackName) {
+function createLoadingElement(trackName){
   const newDiv = document.createElement('div')
   newDiv.classList.add('speaker')
-  newDiv.innerHTML = '🔉'
-
   newDiv.style.transform = `
     translate(${audios[trackName].position.x}px, ${audios[trackName].position.z}px)
-    scale(${0.0})`
+    scale(${1.0})`
 
-  canDragDrop(newDiv, ({ relativeX, relativeY }) => {
+  newDiv.innerHTML = '⏳'
+
+  audios[trackName].elem = newDiv
+  document.body.append(newDiv)
+  return Promise.resolve()
+}
+
+function createTrackElement(trackName) {
+  const trackDiv = audios[trackName].elem
+  trackDiv.classList.add('speaker')
+  trackDiv.innerHTML = '⌛'
+
+
+  canDragDrop(trackDiv, ({ relativeX, relativeY }) => {
     audios[trackName].position = {
       x: relativeX,
       z: relativeY,
@@ -62,20 +73,18 @@ function createTrackElement(trackName) {
     audios[trackName].panner.setPosition(relativeX / 100, 0, relativeY / 100)
   })
 
-  canDoubleClick(newDiv, (e) => {
+  canDoubleClick(trackDiv, (e) => {
     audios[trackName].muted = !audios[trackName].muted
     if (audios[trackName].muted) {
-      audios[trackName].elem.innerHTML = '🔈'
+      audios[trackName].elem.innerHTML = '🔇'
       audios[trackName].gainNode.gain.value = 0
-    }
-    else {
+    } else {
       audios[trackName].elem.innerHTML = '🔉'
       audios[trackName].gainNode.gain.value = 1
     }
   })
 
-  audios[trackName].elem = newDiv
-  document.body.append(newDiv)
+  return audios[trackName].source
 }
 
 
@@ -85,8 +94,12 @@ function drawLoop() {
     audio.analyser.instance.getByteTimeDomainData(audio.analyser.dataArray)
     const max = Math.max.apply(null, audio.analyser.dataArray) / 128
 
+    if (audio.muted) audio.elem.innerHTML = '🔇'
+    else if (max < 1.0) audio.elem.innerHTML =  '🔈'
+    else audio.elem.innerHTML = '🔉'
+
     const { x, z: y } = audio.position
-    audio.elem.style.transform = `translate(${x}px, ${y}px) scale(${max})`
+    audio.elem.style.transform = `translate3d(${x}px, ${y}px, 0px) scale(${max})`
   })
   setTimeout(() => {
     requestAnimationFrame(drawLoop);
@@ -94,29 +107,24 @@ function drawLoop() {
 }
 
 
-Promise.all(
-  URLS.map((URL, i) =>
-    window.fetch(URL)
-    .then((res) => {
-      // initial data
-      const trackName = URLS[i]
-      const { z, x } = calculateInitialPositions(i)
+Promise.all(URLS.map((URL, i) => {
+  const trackName = URLS[i]
+  const { z, x } = calculateInitialPositions(i)
 
-      audios[trackName] = {
-        elem: undefined,
-        source: undefined,
-        position: { z, x },
-        muted: false
-      }
+  audios[trackName] = {
+    elem: undefined,
+    source: undefined,
+    position: { z, x },
+    muted: false
+  }
 
-      createTrackElement(trackName)
-      return res
-    })
-    .then(res => res.arrayBuffer())
-    .then(arrayBuffer => audioCtx.decodeAudioData(arrayBuffer))
-    .then(decodedBuffer => prepareTrack(decodedBuffer, URLS[i])),
-  ),
-)
+  return createLoadingElement(trackName)
+  .then(() => window.fetch(URL))
+  .then(res => res.arrayBuffer())
+  .then(arrayBuffer => audioCtx.decodeAudioData(arrayBuffer))
+  .then(decodedBuffer => prepareTrack(decodedBuffer, trackName))
+  .then(res => createTrackElement(trackName))
+}))
 .then((audioSources) => {
   audioSources.forEach(source => source.start())
   drawLoop()
