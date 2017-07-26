@@ -7,6 +7,8 @@ const audios = require('./data-store')
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)() // define audio context
 const $player = document.getElementById('you')
 
+let sunglasses = false
+
 audioCtx.listener.setPosition(0, 0, 0);
 
 function prepareTrack(audioBuffer, trackName) {
@@ -45,7 +47,13 @@ canDragDrop($player, ({ relativeX, relativeY }) => {
   audioCtx.listener.setPosition(relativeX / 100, 0, relativeY / 100)
 })
 
-function createLoadingElement(trackName){
+canDoubleClick($player, () => {
+  sunglasses = !sunglasses
+  if (sunglasses) $player.innerHTML = '😎'
+  else $player.innerHTML = '🙂'
+})
+
+function createLoadingElement(trackName) {
   const newDiv = document.createElement('div')
   newDiv.classList.add('speaker')
   newDiv.style.transform = `
