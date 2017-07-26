@@ -1,4 +1,6 @@
-function canDragDrop($elem, onDrag){
+const URLS = require('./tracklist')
+
+function canDragDrop($elem, onDrag) {
   let isGrabbing = false
 
   $elem.addEventListener('mousedown', (e) => {
@@ -18,11 +20,42 @@ function canDragDrop($elem, onDrag){
     $elem.style.transform = `translate(${relativeX}px, ${relativeY}px)`
     onDrag && onDrag({
       relativeX,
-      relativeY
+      relativeY,
     })
   })
 }
 
+function canDoubleClick($elem, onDoubleClick) {
+  let isWaitingForSecondClick = false
+  $elem.addEventListener('click', (e) => {
+    if (isWaitingForSecondClick){
+      onDoubleClick && onDoubleClick(e)
+    }
+    isWaitingForSecondClick = true
+    setTimeout(() => {
+      isWaitingForSecondClick = false
+    }, 200)
+  })
+}
+
+function toRadians(angle) {
+  return angle * (Math.PI / 180)
+}
+
+function calculateInitialPositions(index) {
+  const total = URLS.length
+  const deg = 180 + ((180 / (total - 1)) * index)
+  const radius = Math.min((window.innerWidth / 2) * 0.5, 500)
+  return {
+    x: 0 + radius * Math.cos(toRadians(deg)),
+    z: radius * Math.sin(toRadians(deg)),
+  }
+}
+
+
 module.exports = {
-  canDragDrop
+  canDragDrop,
+  toRadians,
+  canDoubleClick,
+  calculateInitialPositions
 }
