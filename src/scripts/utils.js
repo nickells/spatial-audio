@@ -53,10 +53,22 @@ function calculateInitialPositions(index) {
   }
 }
 
+function toggleMute(audioTrack){
+  audioTrack.muted = !audioTrack.muted
+  if (audioTrack.muted) {
+    audioTrack.gainNode.gain.value = 0
+    audioTrack.elem.style.opacity = 0.5
+  } else {
+    audioTrack.gainNode.gain.value = 1
+    audioTrack.elem.style.opacity = 1.0
+  }
+}
+
 
 module.exports = {
   canDragDrop,
   toRadians,
   canDoubleClick,
-  calculateInitialPositions
+  calculateInitialPositions,
+  toggleMute
 }

@@ -220,12 +220,24 @@ function calculateInitialPositions(index) {
   }
 }
 
+function toggleMute(audioTrack){
+  audioTrack.muted = !audioTrack.muted
+  if (audioTrack.muted) {
+    audioTrack.gainNode.gain.value = 0
+    audioTrack.elem.style.opacity = 0.5
+  } else {
+    audioTrack.gainNode.gain.value = 1
+    audioTrack.elem.style.opacity = 1.0
+  }
+}
+
 
 module.exports = {
   canDragDrop,
   toRadians,
   canDoubleClick,
-  calculateInitialPositions
+  calculateInitialPositions,
+  toggleMute
 }
 
 
@@ -235,7 +247,7 @@ module.exports = {
 
 // require index.html so livereload will watch it
 const index = __webpack_require__(1) // eslint-disable-line no-unused-vars
-const { canDragDrop, calculateInitialPositions, canDoubleClick } = __webpack_require__(3)
+const { canDragDrop, calculateInitialPositions, canDoubleClick, toggleMute } = __webpack_require__(3)
 const URLS = __webpack_require__(0)
 const audios = __webpack_require__(2)
 
@@ -293,11 +305,11 @@ canDragDrop($player, ({ relativeX, relativeY }) => {
   audioCtx.listener.setPosition(relativeX / 100, 0, relativeY / 100)
 })
 
-canDoubleClick($player, () => {
-  sunglasses = !sunglasses
-  if (sunglasses) $player.innerHTML = '😌'
-  else $player.innerHTML = '🙂'
-})
+// canDoubleClick($player, () => {
+//   sunglasses = !sunglasses
+//   if (sunglasses) $player.innerHTML = '😌'
+//   else $player.innerHTML = '🙂'
+// })
 
 function createLoadingElement(trackName) {
   const newDiv = document.createElement('div')
@@ -311,17 +323,6 @@ function createLoadingElement(trackName) {
   audios[trackName].elem = newDiv
   document.body.append(newDiv)
   return Promise.resolve()
-}
-
-function toggleMute(audioTrack){
-  audioTrack.muted = !audioTrack.muted
-  if (audioTrack.muted) {
-    audioTrack.gainNode.gain.value = 0
-    audioTrack.elem.style.opacity = 0.5
-  } else {
-    audioTrack.gainNode.gain.value = 1
-    audioTrack.elem.style.opacity = 1.0
-  }
 }
 
 function createTrackElement(track) {
