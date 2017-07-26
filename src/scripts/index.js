@@ -4,6 +4,8 @@ const { canDragDrop, calculateInitialPositions, canDoubleClick } = require('./ut
 const URLS = require('./tracklist')
 const audios = require('./data-store')
 
+const helpModal = require('./help')()
+
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)() // define audio context
 const $player = document.getElementById('you')
 

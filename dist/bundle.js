@@ -63,24 +63,183 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 1);
+/******/ 	return __webpack_require__(__webpack_require__.s = 4);
 /******/ })
 /************************************************************************/
 /******/ ([
 /* 0 */
 /***/ (function(module, exports) {
 
-module.exports = "<!DOCTYPE html>\n<html>\n<head>\n  <title></title>\n  <link rel=\"stylesheet\" type=\"text/css\" href=\"dist/styles.css\">\n</head>\n<body>\n\n<div id=\"you\">🙂</div>\n<script src=\"dist/bundle.js\"></script>\n<script src=\"http://localhost:35729/livereload.js\"></script>\n\n</body>\n</html>"
+const URLS = [
+  'tracks/01_KickInside.wav',
+  'tracks/02_KickBeater.wav',
+  'tracks/03_Snare.wav',
+  'tracks/04_Overheads.wav',
+  'tracks/05_Bass.wav',
+  'tracks/06_Piano.wav',
+]
+
+const Ambience = [
+  {
+    track: 'ambience/Bird Ambience.mp3',
+    icon: '🐦',
+  },
+  {
+    track: 'ambience/Busy City Street.mp3',
+    icon: '🏙',
+  },
+  {
+    track: 'ambience/Campfire.mp3',
+    icon: '🔥',
+  },
+  {
+    track: 'ambience/Car Interior.mp3',
+    icon: '🚗',
+  },
+  {
+    track: 'ambience/Coffee Shop.mp3',
+    icon: '☕',
+  },
+  {
+    track: 'ambience/Electric Hum.mp3',
+    icon: '🔌',
+  },
+  {
+    track: 'ambience/Forest 1.mp3',
+    icon: '🌲',
+  },
+  {
+    track: 'ambience/Forest 2.mp3',
+    icon: '🌳',
+  },
+  {
+    track: 'ambience/Helicopter.mp3',
+    icon: '🚁',
+  },
+  {
+    track: 'ambience/Ocean Waves.mp3',
+    icon: '🌊',
+  },
+  // {
+  //   track: 'ambience/Plane.mp3',
+  //   icon: '🛩',
+  // },
+  {
+    track: 'ambience/Rumble.mp3',
+    icon: '💢',
+  },
+  {
+    track: 'ambience/Street Traffic.mp3',
+    icon: '🛣',
+  },
+  {
+    track: 'ambience/Thuderstorm.mp3',
+    icon: '⛈',
+  },
+  {
+    track: 'ambience/Windy Desert.mp3',
+    icon: '🌬',
+  },
+]
+
+module.exports = Ambience
 
 /***/ }),
 /* 1 */
+/***/ (function(module, exports) {
+
+module.exports = "<!DOCTYPE html>\n<html>\n<head>\n  <title></title>\n  <link rel=\"stylesheet\" type=\"text/css\" href=\"dist/styles.css\">\n</head>\n<body>\n<div id=\"help-modal\" class=\"\">\n  <div class=\"info\">\n    <span>Double click on any sound to activate or deactivate it.</span>\n    <span>Drag sounds around to change their position.</span>\n    <span>Drag the face to change your position.</span>\n    <span>Headphones are highly recommended!</span>\n  </div>\n  <div class=\"scrim\"></div>\n</div>\n\n<div id=\"you\">🙂</div>\n<div id=\"help\">❓</div>\n<script src=\"dist/bundle.js\"></script>\n<script src=\"http://localhost:35729/livereload.js\"></script>\n\n</body>\n</html>"
+
+/***/ }),
+/* 2 */
+/***/ (function(module, exports) {
+
+const audios = {
+
+}
+
+module.exports = audios
+
+
+/***/ }),
+/* 3 */
+/***/ (function(module, exports, __webpack_require__) {
+
+const URLS = __webpack_require__(0)
+
+function canDragDrop($elem, onDrag) {
+  let isGrabbing = false
+
+  $elem.addEventListener('mousedown', (e) => {
+    isGrabbing = true
+    document.body.classList.add('is-dragging')
+    $elem.classList.add('is-being-dragged')
+  })
+  $elem.addEventListener('mouseup', (e) => {
+    isGrabbing = false
+    document.body.classList.remove('is-dragging')
+    $elem.classList.remove('is-being-dragged')
+  })
+  window.addEventListener('mousemove', (e) => {
+    if (!isGrabbing) return
+    const relativeX = e.pageX - $elem.offsetLeft - ($elem.clientWidth / 2)
+    const relativeY = e.pageY - $elem.offsetTop - ($elem.clientHeight / 2)
+    $elem.style.transform = `translate(${relativeX}px, ${relativeY}px)`
+    onDrag && onDrag({
+      relativeX,
+      relativeY,
+    })
+  })
+}
+
+function canDoubleClick($elem, onDoubleClick) {
+  let isWaitingForSecondClick = false
+  $elem.addEventListener('click', (e) => {
+    if (isWaitingForSecondClick){
+      onDoubleClick && onDoubleClick(e)
+    }
+    isWaitingForSecondClick = true
+    setTimeout(() => {
+      isWaitingForSecondClick = false
+    }, 200)
+  })
+}
+
+function toRadians(angle) {
+  return angle * (Math.PI / 180)
+}
+
+function calculateInitialPositions(index) {
+  const total = URLS.length
+  // const deg = 180 + ((180 / (total - 1)) * index)
+  const deg = ((360 / (total)) * index)
+  const radius = Math.min((window.innerWidth / 2) * 0.5, 500)
+  return {
+    x: 0 + radius * Math.cos(toRadians(deg)),
+    z: radius * Math.sin(toRadians(deg)),
+  }
+}
+
+
+module.exports = {
+  canDragDrop,
+  toRadians,
+  canDoubleClick,
+  calculateInitialPositions
+}
+
+
+/***/ }),
+/* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // require index.html so livereload will watch it
-const index = __webpack_require__(0) // eslint-disable-line no-unused-vars
-const { canDragDrop, calculateInitialPositions, canDoubleClick } = __webpack_require__(2)
-const URLS = __webpack_require__(3)
-const audios = __webpack_require__(4)
+const index = __webpack_require__(1) // eslint-disable-line no-unused-vars
+const { canDragDrop, calculateInitialPositions, canDoubleClick } = __webpack_require__(3)
+const URLS = __webpack_require__(0)
+const audios = __webpack_require__(2)
+
+const helpModal = __webpack_require__(5)()
 
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)() // define audio context
 const $player = document.getElementById('you')
@@ -228,161 +387,21 @@ Promise.all(URLS.map((URL, i) => {
 
 
 /***/ }),
-/* 2 */
-/***/ (function(module, exports, __webpack_require__) {
-
-const URLS = __webpack_require__(3)
-
-function canDragDrop($elem, onDrag) {
-  let isGrabbing = false
-
-  $elem.addEventListener('mousedown', (e) => {
-    isGrabbing = true
-    document.body.classList.add('is-dragging')
-    $elem.classList.add('is-being-dragged')
-  })
-  $elem.addEventListener('mouseup', (e) => {
-    isGrabbing = false
-    document.body.classList.remove('is-dragging')
-    $elem.classList.remove('is-being-dragged')
-  })
-  window.addEventListener('mousemove', (e) => {
-    if (!isGrabbing) return
-    const relativeX = e.pageX - $elem.offsetLeft - ($elem.clientWidth / 2)
-    const relativeY = e.pageY - $elem.offsetTop - ($elem.clientHeight / 2)
-    $elem.style.transform = `translate(${relativeX}px, ${relativeY}px)`
-    onDrag && onDrag({
-      relativeX,
-      relativeY,
-    })
-  })
-}
-
-function canDoubleClick($elem, onDoubleClick) {
-  let isWaitingForSecondClick = false
-  $elem.addEventListener('click', (e) => {
-    if (isWaitingForSecondClick){
-      onDoubleClick && onDoubleClick(e)
-    }
-    isWaitingForSecondClick = true
-    setTimeout(() => {
-      isWaitingForSecondClick = false
-    }, 200)
-  })
-}
-
-function toRadians(angle) {
-  return angle * (Math.PI / 180)
-}
-
-function calculateInitialPositions(index) {
-  const total = URLS.length
-  // const deg = 180 + ((180 / (total - 1)) * index)
-  const deg = ((360 / (total)) * index)
-  const radius = Math.min((window.innerWidth / 2) * 0.5, 500)
-  return {
-    x: 0 + radius * Math.cos(toRadians(deg)),
-    z: radius * Math.sin(toRadians(deg)),
-  }
-}
-
-
-module.exports = {
-  canDragDrop,
-  toRadians,
-  canDoubleClick,
-  calculateInitialPositions
-}
-
-
-/***/ }),
-/* 3 */
+/* 5 */
 /***/ (function(module, exports) {
 
-const URLS = [
-  'tracks/01_KickInside.wav',
-  'tracks/02_KickBeater.wav',
-  'tracks/03_Snare.wav',
-  'tracks/04_Overheads.wav',
-  'tracks/05_Bass.wav',
-  'tracks/06_Piano.wav',
-]
+function initHelp(){
+  const modal = document.getElementById('help-modal')
+  document.getElementById('help').addEventListener('click', ()=>{
+    modal.classList.add('active')
+  })
 
-const Ambience = [
-  {
-    track: 'ambience/Bird Ambience.mp3',
-    icon: '🐦',
-  },
-  {
-    track: 'ambience/Busy City Street.mp3',
-    icon: '🏙',
-  },
-  {
-    track: 'ambience/Campfire.mp3',
-    icon: '🔥',
-  },
-  {
-    track: 'ambience/Car Interior.mp3',
-    icon: '🚗',
-  },
-  {
-    track: 'ambience/Coffee Shop.mp3',
-    icon: '☕',
-  },
-  {
-    track: 'ambience/Electric Hum.mp3',
-    icon: '🔌',
-  },
-  {
-    track: 'ambience/Forest 1.mp3',
-    icon: '🌲',
-  },
-  {
-    track: 'ambience/Forest 2.mp3',
-    icon: '🌳',
-  },
-  {
-    track: 'ambience/Helicopter.mp3',
-    icon: '🚁',
-  },
-  {
-    track: 'ambience/Ocean Waves.mp3',
-    icon: '🌊',
-  },
-  // {
-  //   track: 'ambience/Plane.mp3',
-  //   icon: '🛩',
-  // },
-  {
-    track: 'ambience/Rumble.mp3',
-    icon: '💢',
-  },
-  {
-    track: 'ambience/Street Traffic.mp3',
-    icon: '🛣',
-  },
-  {
-    track: 'ambience/Thuderstorm.mp3',
-    icon: '⛈',
-  },
-  {
-    track: 'ambience/Windy Desert.mp3',
-    icon: '🌬',
-  },
-]
-
-module.exports = Ambience
-
-/***/ }),
-/* 4 */
-/***/ (function(module, exports) {
-
-const audios = {
-
+  document.getElementsByClassName('scrim')[0].addEventListener('click', ()=>{
+    modal.classList.remove('active')
+  })
 }
 
-module.exports = audios
-
+module.exports = initHelp
 
 /***/ })
 /******/ ]);
