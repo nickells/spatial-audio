@@ -7,31 +7,17 @@ const audioCtx = new (window.AudioContext || window.webkitAudioContext)() // def
 
 const $player = document.getElementById('you')
 
-
-
 const URLS = [
-  'tracks/01_MainPair1.wav',
-  'tracks/02_MainPair2.wav',
-  'tracks/03_SpotMic1_Tenors.wav',
-  'tracks/04_SpotMic2_Basses.wav',
-  'tracks/05_SpotMic3_Sopranos.wav',
-  'tracks/06_SpotMic4_Altos.wav',
-  'tracks/07_BassCloseMic1.wav',
-  'tracks/08_BassCloseMic2.wav',
-  'tracks/09_BassCloseMic3.wav',
-  'tracks/10_BassCloseMic4.wav',
-  'tracks/11_BassCloseMic5.wav',
-  'tracks/12_PercSolo_CloseMic1.wav',
-  'tracks/13_PercSolo_CloseMic2.wav',
-  'tracks/14_PercSolo_FarMicPair1.wav',
-  'tracks/15_PercSolo_FarMicPair2.wav',
-  'tracks/16_PercChoir MicPair1.wav',
-  'tracks/17_PercChoir MicPair2.wav',
-  'tracks/18_PercChoir MicPair3.wav',
-  'tracks/19_Whistle.wav',
-  'tracks/20_LeadVox.wav',
+  'tracks/Creep%201.ogg',
+  'tracks/Creep%202.ogg',
+  'tracks/Creep%203.ogg',
+  'tracks/Creep%204.ogg',
+  'tracks/Creep%205.ogg',
+  'tracks/Creep%206.ogg',
+  'tracks/Creep%207.ogg',
+  'tracks/Creep%208.ogg',
+  'tracks/Creep%209.ogg',
 ]
-
 
 const listener = audioCtx.listener
 
@@ -66,8 +52,9 @@ function hookUpAudio(audioBuffer, trackName) {
   panner.connect(audioCtx.destination)
 
   audios[trackName].panner = panner
-  // source.loop = true
-  source.start()
+  source.loop = true
+
+  return source
 }
 
 canDragDrop($player, ({relativeX, relativeY})=>{
@@ -76,9 +63,11 @@ canDragDrop($player, ({relativeX, relativeY})=>{
 
 function makePlayer(buffer, trackName) {
   const newDiv = document.createElement('div')
-  let isGrabbing = false
   newDiv.classList.add('speaker')
-  newDiv.innerHTML = '😯'
+  newDiv.innerHTML = '🔊'
+
+  newDiv.style.transform = `translate(${audios[trackName].position.x}px, ${audios[trackName].position.z}px) scale(${0.0})`
+
   canDragDrop(newDiv, ({relativeX, relativeY}) => {
     audios[trackName].position = {
       x: relativeX,
@@ -89,34 +78,37 @@ function makePlayer(buffer, trackName) {
 
   audios[trackName].elem = newDiv
   document.body.append(newDiv)
+  return buffer
 }
 
-Promise.all(URLS.map(URL => window.fetch(URL)
-  .then(res => res.arrayBuffer())
-  .then(arrayBuffer => audioCtx.decodeAudioData(arrayBuffer)))
+Promise.all(
+  URLS.map((URL, i) => window.fetch(URL)
+    .then(res => res.arrayBuffer())
+    .then(arrayBuffer => audioCtx.decodeAudioData(arrayBuffer))
+    .then((decodedBuffer) => {
+      const trackName = URLS[i]
+
+      // initial data
+      audios[trackName] = {
+        elem: undefined,
+        source: undefined,
+        position: {
+          z: Math.random() * -300,
+          x: 300 - Math.random() * 500,
+        },
+      }
+
+      makePlayer(decodedBuffer, trackName)
+      return hookUpAudio(decodedBuffer, trackName)
+    }),
+  ),
 )
-.then((audioBuffers) => {
-  audioBuffers.forEach((audio, i) => {
-    audios[URLS[i]] = {
-      elem: undefined,
-      source: undefined,
-      position: {
-        z: Math.random() * -300,
-        x: 300 - Math.random() * 500,
-      },
-    }
-    hookUpAudio(audio, URLS[i])
-    makePlayer(audio, URLS[i])
+.then((audioSources) => {
+  audioSources.forEach((source) => {
+    source.start()
   })
   drawLoop()
 })
-
-// setInterval(function changeFace(){
-//   const faces = ['😯', '😧', '😲', '😩', '😙']
-//   Object.keys(audios).forEach((trackName) => {
-//     audios[trackName].elem.innerHTML = faces[Math.floor(Math.random() * faces.length)]
-//   })
-// }, 500)
 
 function drawLoop() {
   Object.keys(audios).forEach((trackName) => {
@@ -127,7 +119,8 @@ function drawLoop() {
     const { x, z: y } = audio.position
     audio.elem.style.transform = `translate(${x}px, ${y}px) scale(${max})`
   })
-
-  requestAnimationFrame(drawLoop);
+  setTimeout(()=>{
+    requestAnimationFrame(drawLoop);
+  }, 1000 / 60)
 }
 

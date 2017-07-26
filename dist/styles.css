@@ -8,23 +8,19 @@ body {
   justify-content: center;
   height: 100vh;
 }
-
-
-.is-dragging & *:not(.is-being-dragged) {
+.is-dragging  *:not(.is-being-dragged) {
   pointer-events: none;
 }
-
 #you,
 .speaker {
   -webkit-user-select: none;
   position: absolute;
   cursor: -webkit-grab;
-
-  &.is-being-dragged {
-    cursor: -webkit-grabbing;
-  }
 }
-
+#you.is-being-dragged,
+.speaker.is-being-dragged {
+  cursor: -webkit-grabbing;
+}
 .speaker {
   transition: transform 100ms;
 }
