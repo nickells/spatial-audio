@@ -22,5 +22,5 @@ body {
   cursor: -webkit-grabbing;
 }
 .speaker {
-  transition: transform 100ms;
+  transition: transform 50ms;
 }

@@ -61,7 +61,7 @@ canDragDrop($player, ({relativeX, relativeY})=>{
   audioCtx.listener.setPosition(relativeX / 100, 0, relativeY / 100)
 })
 
-function makePlayer(buffer, trackName) {
+function makePlayer(trackName) {
   const newDiv = document.createElement('div')
   newDiv.classList.add('speaker')
   newDiv.innerHTML = '🔊'
@@ -78,35 +78,46 @@ function makePlayer(buffer, trackName) {
 
   audios[trackName].elem = newDiv
   document.body.append(newDiv)
-  return buffer
+}
+
+function toRadians (angle) {
+  return angle * (Math.PI / 180)
+}
+
+function calculatePositions(index){
+  const total = URLS.length
+  const deg = 360 - ((180 / (total - 1)) * index)
+  const radius = 150
+  return {
+    x: 0 + radius * Math.cos(toRadians(deg)),
+    z: radius * Math.sin(toRadians(deg))
+  }
 }
 
 Promise.all(
-  URLS.map((URL, i) => window.fetch(URL)
-    .then(res => res.arrayBuffer())
-    .then(arrayBuffer => audioCtx.decodeAudioData(arrayBuffer))
-    .then((decodedBuffer) => {
-      const trackName = URLS[i]
-
+  URLS.map((URL, i) =>
+    window.fetch(URL)
+    .then(res => {
       // initial data
-      audios[trackName] = {
+      const { z, x} = calculatePositions(i)
+      audios[URLS[i]] = {
         elem: undefined,
         source: undefined,
         position: {
-          z: Math.random() * -300,
-          x: 300 - Math.random() * 500,
+          z,
+          x
         },
       }
-
-      makePlayer(decodedBuffer, trackName)
-      return hookUpAudio(decodedBuffer, trackName)
-    }),
-  ),
+      makePlayer(URLS[i])
+      return res
+    })
+    .then(res => res.arrayBuffer())
+    .then(arrayBuffer => audioCtx.decodeAudioData(arrayBuffer))
+    .then(decodedBuffer => hookUpAudio(decodedBuffer, URLS[i]))
+  )
 )
 .then((audioSources) => {
-  audioSources.forEach((source) => {
-    source.start()
-  })
+  audioSources.forEach(source => source.start())
   drawLoop()
 })
 
