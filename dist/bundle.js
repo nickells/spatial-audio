@@ -63,7 +63,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 4);
+/******/ 	return __webpack_require__(__webpack_require__.s = 5);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -163,6 +163,23 @@ module.exports = audios
 
 /***/ }),
 /* 3 */
+/***/ (function(module, exports) {
+
+function initHelp(){
+  const modal = document.getElementById('help-modal')
+  document.getElementById('help').addEventListener('click', ()=>{
+    modal.classList.add('active')
+  })
+
+  document.getElementsByClassName('scrim')[0].addEventListener('click', ()=>{
+    modal.classList.remove('active')
+  })
+}
+
+module.exports = initHelp
+
+/***/ }),
+/* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
 const URLS = __webpack_require__(0)
@@ -242,16 +259,16 @@ module.exports = {
 
 
 /***/ }),
-/* 4 */
+/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // require index.html so livereload will watch it
 const index = __webpack_require__(1) // eslint-disable-line no-unused-vars
-const { canDragDrop, calculateInitialPositions, canDoubleClick, toggleMute } = __webpack_require__(3)
+const { canDragDrop, calculateInitialPositions, canDoubleClick, toggleMute } = __webpack_require__(4)
 const URLS = __webpack_require__(0)
 const audios = __webpack_require__(2)
 
-const helpModal = __webpack_require__(5)()
+const helpModal = __webpack_require__(3)()
 
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)() // define audio context
 const $player = document.getElementById('you')
@@ -386,23 +403,6 @@ Promise.all(URLS.map((URL, i) => {
   drawLoop()
 })
 
-
-/***/ }),
-/* 5 */
-/***/ (function(module, exports) {
-
-function initHelp(){
-  const modal = document.getElementById('help-modal')
-  document.getElementById('help').addEventListener('click', ()=>{
-    modal.classList.add('active')
-  })
-
-  document.getElementsByClassName('scrim')[0].addEventListener('click', ()=>{
-    modal.classList.remove('active')
-  })
-}
-
-module.exports = initHelp
 
 /***/ })
 /******/ ]);
