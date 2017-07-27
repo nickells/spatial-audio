@@ -1,14 +1,14 @@
 @import 'help-modal.less';
 
+
 body {
   background: white;
   font-size: 64px;
   margin: 0;
   padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
+  text-align: center;
+  height: 100%;
+  width: 100%;
 }
 
 
@@ -21,12 +21,15 @@ body {
   z-index: 100;
   -webkit-user-select: none;
   position: absolute;
+  top: ~'calc(50% - 32px)';
+  display: inline-block;
   cursor: -webkit-grab;
 
   &.is-being-dragged {
     cursor: -webkit-grabbing;
   }
 }
+
 
 .speaker {
   transition: transform 50ms;

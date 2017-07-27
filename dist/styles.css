@@ -61,10 +61,9 @@ body {
   font-size: 64px;
   margin: 0;
   padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
+  text-align: center;
+  height: 100%;
+  width: 100%;
 }
 .is-dragging  *:not(.is-being-dragged) {
   pointer-events: none;
@@ -74,6 +73,8 @@ body {
   z-index: 100;
   -webkit-user-select: none;
   position: absolute;
+  top: calc(50% - 32px);
+  display: inline-block;
   cursor: -webkit-grab;
 }
 #you.is-being-dragged,

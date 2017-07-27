@@ -1,7 +1,9 @@
 // require index.html so livereload will watch it
 const index = require('../../index.html') // eslint-disable-line no-unused-vars
+
 const { canDragDrop, calculateInitialPositions, canDoubleClick, toggleMute } = require('./utils')
 const URLS = require('./tracklist')
+require('whatwg-fetch')
 const audios = require('./data-store')
 
 const helpModal = require('./help')()
@@ -13,13 +15,6 @@ let sunglasses = false
 
 audioCtx.listener.setPosition(0, 0, 0);
 
-// function createListener(audioBuffer, trackName) {
-//   navigator.mediaDevices.getUserMedia({audio: true, video: true})
-//   .then(stream => {
-//     const source = audioCtx.createMediaStreamSource(stream)
-//   })
-// }
-
 function prepareTrack(audioBuffer, trackName) {
   const source = audioCtx.createBufferSource()
   source.buffer = audioBuffer;
@@ -30,6 +25,7 @@ function prepareTrack(audioBuffer, trackName) {
   const { x, z } = audios[trackName].position
 
   panner.setPosition(x / 100, 0, z / 100)
+
 
   // create analyser
   const analyser = audioCtx.createAnalyser()
@@ -58,11 +54,6 @@ canDragDrop($player, ({ relativeX, relativeY }) => {
   audioCtx.listener.setPosition(relativeX / 100, 0, relativeY / 100)
 })
 
-// canDoubleClick($player, () => {
-//   sunglasses = !sunglasses
-//   if (sunglasses) $player.innerHTML = '😌'
-//   else $player.innerHTML = '🙂'
-// })
 
 function createLoadingElement(trackName) {
   const newDiv = document.createElement('div')
@@ -108,17 +99,27 @@ function drawLoop() {
     const max = Math.max.apply(null, audio.analyser.dataArray) / 128
 
     const { x, z: y } = audio.position
-    audio.elem.style.transform = `translate3d(${x}px, ${y}px, 0px) scale(${max})`
+
+    audio.elem.style.transform = `translate3d(${x}px, ${y}px, 0px) scale(${Math.max(max, 0.8)})`
   })
   setTimeout(() => {
     requestAnimationFrame(drawLoop);
   }, 1000 / 60)
 }
 
+// Safari's decodeAudioData isn't a promise by default. use callback spec
+const decodePromise = (buffer) => new Promise((res, rej) => {
+  return audioCtx.decodeAudioData(buffer, (data, err)=>{
+    if (err) rej(err)
+    else res(data)
+  })
+})
+
 function loadMp3(url) {
-  return window.fetch(url)
+  return fetch(url)
   .then(res => res.arrayBuffer())
-  .then(arrayBuffer => audioCtx.decodeAudioData(arrayBuffer))
+  .then(arrayBuffer => decodePromise(arrayBuffer))
+  .catch( err => console.log(err))
 }
 
 
@@ -137,6 +138,10 @@ Promise.all(URLS.map((URL, i) => {
   .then(() => loadMp3(trackName))
   .then(decodedBuffer => prepareTrack(decodedBuffer, trackName))
   .then(res => createTrackElement(URL))
+  .catch(err => {
+    console.log('erorr')
+    console.log(err)
+  })
 }))
 .then((audioSources) => {
   audioSources.forEach(source => source.start())

@@ -24,6 +24,7 @@
     "css-loader": "^0.28.4",
     "raw-loader": "^0.5.1",
     "save-dev": "^2.0.0",
-    "webpack-livereload-plugin": "^0.11.0"
+    "webpack-livereload-plugin": "^0.11.0",
+    "whatwg-fetch": "^2.0.3"
   }
 }
