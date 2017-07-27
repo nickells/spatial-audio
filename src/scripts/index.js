@@ -108,10 +108,10 @@ function drawLoop() {
 }
 
 // Safari's decodeAudioData isn't a promise by default. use callback spec
-const decodePromise = (buffer) => new Promise((res, rej) => {
+const decodePromise = (buffer) => new Promise((resolve, reject) => {
   return audioCtx.decodeAudioData(buffer, (data, err)=>{
-    if (err) rej(err)
-    else res(data)
+    if (err) reject(err)
+    else resolve(data)
   })
 })
 
