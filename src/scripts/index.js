@@ -2,6 +2,9 @@
 const index = require('../../index.html') // eslint-disable-line no-unused-vars
 
 const { canDragDrop, calculateInitialPositions, canDoubleClick, toggleMute } = require('./utils')
+
+const waitForServiceWorker = require('./caching')
+
 const URLS = require('./tracklist')
 require('whatwg-fetch')
 const audios = require('./data-store')
@@ -123,26 +126,29 @@ function loadMp3(url) {
 }
 
 
-Promise.all(URLS.map((URL, i) => {
-  const trackName = URL.track
-  const { z, x } = calculateInitialPositions(i)
+waitForServiceWorker()
+.then(()=>{
+  return Promise.all(URLS.map((URL, i) => {
+    const trackName = URL.track
+    const { z, x } = calculateInitialPositions(i)
 
-  audios[trackName] = {
-    elem: undefined,
-    source: undefined,
-    position: { z, x },
-    muted: false
-  }
+    audios[trackName] = {
+      elem: undefined,
+      source: undefined,
+      position: { z, x },
+      muted: false
+    }
 
-  return createLoadingElement(trackName)
-  .then(() => loadMp3(trackName))
-  .then(decodedBuffer => prepareTrack(decodedBuffer, trackName))
-  .then(res => createTrackElement(URL))
-  .catch(err => {
-    console.log('erorr')
-    console.log(err)
-  })
-}))
+    return createLoadingElement(trackName)
+    .then(() => loadMp3(trackName))
+    .then(decodedBuffer => prepareTrack(decodedBuffer, trackName))
+    .then(res => createTrackElement(URL))
+    .catch(err => {
+      console.log('erorr')
+      console.log(err)
+    })
+  }))
+})
 .then((audioSources) => {
   audioSources.forEach(source => source.start())
   drawLoop()

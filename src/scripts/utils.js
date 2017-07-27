@@ -69,7 +69,7 @@ function calculateInitialPositions(index) {
   }
 }
 
-function toggleMute(audioTrack){
+function toggleMute(audioTrack) {
   audioTrack.muted = !audioTrack.muted
   if (audioTrack.muted) {
     audioTrack.gainNode.gain.value = 0
