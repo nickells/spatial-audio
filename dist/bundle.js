@@ -148,7 +148,7 @@ module.exports = Ambience
 /* 1 */
 /***/ (function(module, exports) {
 
-module.exports = "<!DOCTYPE html>\n<html>\n<head>\n  <title></title>\n  <link rel=\"stylesheet\" type=\"text/css\" href=\"dist/styles.css\">\n  <meta name=\"viewport\" content=\"width=device-width, user-scalable=no, initial-scale=1.0\" />\n\n</head>\n<body>\n<div id=\"help-modal\" class=\"\">\n  <div class=\"info\">\n    <span>Double click on any sound to activate or deactivate it.</span>\n    <span>Drag sounds around to change their position.</span>\n    <span>Drag the face to change your position.</span>\n    <span>Headphones are highly recommended!</span>\n  </div>\n  <div class=\"scrim\"></div>\n</div>\n\n<div id=\"you\">🙂</div>\n<div id=\"help\">❓</div>\n<script src=\"dist/bundle.js\"></script>\n<script src=\"http://localhost:35729/livereload.js\"></script>\n\n</body>\n</html>"
+module.exports = "<!DOCTYPE html>\n<html>\n<head>\n  <title></title>\n  <link rel=\"stylesheet\" type=\"text/css\" href=\"dist/styles.css\">\n  <meta name=\"viewport\" content=\"width=device-width, user-scalable=no, initial-scale=0.8\" />\n\n</head>\n<body>\n<div id=\"help-modal\" class=\"\">\n  <div class=\"info\">\n    <span>Double click on any sound to activate or deactivate it.</span>\n    <span>Drag sounds around to change their position.</span>\n    <span>Drag the face to change your position.</span>\n    <span>Headphones are highly recommended!</span>\n  </div>\n  <div class=\"scrim\"></div>\n</div>\n\n<div id=\"you\">🙂</div>\n<div id=\"help\">❓</div>\n<script src=\"dist/bundle.js\"></script>\n<script src=\"http://localhost:35729/livereload.js\"></script>\n\n</body>\n</html>"
 
 /***/ }),
 /* 2 */

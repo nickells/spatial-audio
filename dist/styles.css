@@ -62,7 +62,6 @@ body {
   font-size: 64px;
   margin: 0;
   padding: 0;
-  text-align: center;
   height: 100%;
   width: 100%;
 }
@@ -75,6 +74,7 @@ body {
   -webkit-user-select: none;
   position: absolute;
   top: calc(50% - 32px);
+  left: calc(50% - 32px);
   display: inline-block;
   cursor: -webkit-grab;
 }

@@ -5,11 +5,9 @@ body {
   font-size: 64px;
   margin: 0;
   padding: 0;
-  text-align: center;
   height: 100%;
   width: 100%;
 }
-
 
 .is-dragging & *:not(.is-being-dragged) {
   pointer-events: none;
@@ -21,6 +19,7 @@ body {
   -webkit-user-select: none;
   position: absolute;
   top: ~'calc(50% - 32px)';
+  left: ~'calc(50% - 32px)';
   display: inline-block;
   cursor: -webkit-grab;
 

@@ -48,6 +48,6 @@ module.exports = [{
   },
   plugins: [
     new ExtractTextPlugin('styles.css'),
-    LiveReloader,
+    // LiveReloader,
   ],
 }]
