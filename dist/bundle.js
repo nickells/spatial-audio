@@ -106,11 +106,11 @@ const Ambience = [
   },
   {
     track: 'ambience/Forest 1.mp3',
-    icon: '🌲',
+    icon: '🌳',
   },
   {
     track: 'ambience/Forest 2.mp3',
-    icon: '🌳',
+    icon: '🏕',
   },
   {
     track: 'ambience/Helicopter.mp3',
@@ -230,7 +230,7 @@ function calculateInitialPositions(index) {
   const total = URLS.length
   // const deg = 180 + ((180 / (total - 1)) * index)
   const deg = ((360 / (total)) * index)
-  const radius = Math.min((window.innerWidth / 2) * 0.5, 500)
+  const radius = Math.min((window.innerWidth / 2), (window.innerHeight / 2)) * 0.6
   return {
     x: 0 + radius * Math.cos(toRadians(deg)),
     z: radius * Math.sin(toRadians(deg)),
@@ -379,6 +379,12 @@ function drawLoop() {
   }, 1000 / 60)
 }
 
+function loadMp3(url) {
+  return window.fetch(url)
+  .then(res => res.arrayBuffer())
+  .then(arrayBuffer => audioCtx.decodeAudioData(arrayBuffer))
+}
+
 
 Promise.all(URLS.map((URL, i) => {
   const trackName = URL.track
@@ -392,9 +398,7 @@ Promise.all(URLS.map((URL, i) => {
   }
 
   return createLoadingElement(trackName)
-  .then(() => window.fetch(trackName))
-  .then(res => res.arrayBuffer())
-  .then(arrayBuffer => audioCtx.decodeAudioData(arrayBuffer))
+  .then(() => loadMp3(trackName))
   .then(decodedBuffer => prepareTrack(decodedBuffer, trackName))
   .then(res => createTrackElement(URL))
 }))

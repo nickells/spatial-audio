@@ -115,6 +115,12 @@ function drawLoop() {
   }, 1000 / 60)
 }
 
+function loadMp3(url) {
+  return window.fetch(url)
+  .then(res => res.arrayBuffer())
+  .then(arrayBuffer => audioCtx.decodeAudioData(arrayBuffer))
+}
+
 
 Promise.all(URLS.map((URL, i) => {
   const trackName = URL.track
@@ -128,9 +134,7 @@ Promise.all(URLS.map((URL, i) => {
   }
 
   return createLoadingElement(trackName)
-  .then(() => window.fetch(trackName))
-  .then(res => res.arrayBuffer())
-  .then(arrayBuffer => audioCtx.decodeAudioData(arrayBuffer))
+  .then(() => loadMp3(trackName))
   .then(decodedBuffer => prepareTrack(decodedBuffer, trackName))
   .then(res => createTrackElement(URL))
 }))

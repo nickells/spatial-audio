@@ -34,11 +34,11 @@ const Ambience = [
   },
   {
     track: 'ambience/Forest 1.mp3',
-    icon: '🌲',
+    icon: '🌳',
   },
   {
     track: 'ambience/Forest 2.mp3',
-    icon: '🌳',
+    icon: '🏕',
   },
   {
     track: 'ambience/Helicopter.mp3',

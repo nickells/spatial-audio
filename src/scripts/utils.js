@@ -46,7 +46,7 @@ function calculateInitialPositions(index) {
   const total = URLS.length
   // const deg = 180 + ((180 / (total - 1)) * index)
   const deg = ((360 / (total)) * index)
-  const radius = Math.min((window.innerWidth / 2) * 0.5, 500)
+  const radius = Math.min((window.innerWidth / 2), (window.innerHeight / 2)) * 0.6
   return {
     x: 0 + radius * Math.cos(toRadians(deg)),
     z: radius * Math.sin(toRadians(deg)),
