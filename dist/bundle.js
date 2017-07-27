@@ -63,7 +63,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 7);
+/******/ 	return __webpack_require__(__webpack_require__.s = 6);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -621,25 +621,6 @@ module.exports = "<!DOCTYPE html>\n<html>\n<head>\n  <title></title>\n  <link re
 /* 3 */
 /***/ (function(module, exports) {
 
-const waitForServiceWorker = () => new Promise((resolve, reject) => {
-  window.addEventListener('load', function() {
-    navigator.serviceWorker.register('/sw.js').then(function(registration) {
-      // Registration was successful
-      resolve(registration)
-    }, function(err) {
-      // registration failed :(
-      console.log('ServiceWorker registration failed: ', err);
-      reject(err)
-    });
-  });
-})
-
-module.exports = waitForServiceWorker
-
-/***/ }),
-/* 4 */
-/***/ (function(module, exports) {
-
 const audios = {
 
 }
@@ -648,7 +629,7 @@ module.exports = audios
 
 
 /***/ }),
-/* 5 */
+/* 4 */
 /***/ (function(module, exports) {
 
 function initHelp(){
@@ -665,7 +646,7 @@ function initHelp(){
 module.exports = initHelp
 
 /***/ }),
-/* 6 */
+/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
 const URLS = __webpack_require__(0)
@@ -761,21 +742,18 @@ module.exports = {
 
 
 /***/ }),
-/* 7 */
+/* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // require index.html so livereload will watch it
 const index = __webpack_require__(1) // eslint-disable-line no-unused-vars
 
-const { canDragDrop, calculateInitialPositions, canDoubleClick, toggleMute } = __webpack_require__(6)
-
-const waitForServiceWorker = __webpack_require__(3)
-
+const { canDragDrop, calculateInitialPositions, canDoubleClick, toggleMute } = __webpack_require__(5)
 const URLS = __webpack_require__(0)
 __webpack_require__(2)
-const audios = __webpack_require__(4)
+const audios = __webpack_require__(3)
 
-const helpModal = __webpack_require__(5)()
+const helpModal = __webpack_require__(4)()
 
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)() // define audio context
 const $player = document.getElementById('you')
@@ -891,30 +869,26 @@ function loadMp3(url) {
   .catch( err => console.log(err))
 }
 
+Promise.all(URLS.map((URL, i) => {
+  const trackName = URL.track
+  const { z, x } = calculateInitialPositions(i)
 
-waitForServiceWorker()
-.then(()=>{
-  return Promise.all(URLS.map((URL, i) => {
-    const trackName = URL.track
-    const { z, x } = calculateInitialPositions(i)
+  audios[trackName] = {
+    elem: undefined,
+    source: undefined,
+    position: { z, x },
+    muted: false
+  }
 
-    audios[trackName] = {
-      elem: undefined,
-      source: undefined,
-      position: { z, x },
-      muted: false
-    }
-
-    return createLoadingElement(trackName)
-    .then(() => loadMp3(trackName))
-    .then(decodedBuffer => prepareTrack(decodedBuffer, trackName))
-    .then(res => createTrackElement(URL))
-    .catch(err => {
-      console.log('erorr')
-      console.log(err)
-    })
-  }))
-})
+  return createLoadingElement(trackName)
+  .then(() => loadMp3(trackName))
+  .then(decodedBuffer => prepareTrack(decodedBuffer, trackName))
+  .then(res => createTrackElement(URL))
+  .catch(err => {
+    console.log('erorr')
+    console.log(err)
+  })
+}))
 .then((audioSources) => {
   audioSources.forEach(source => source.start())
   drawLoop()
