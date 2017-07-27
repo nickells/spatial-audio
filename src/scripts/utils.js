@@ -3,31 +3,45 @@ const URLS = require('./tracklist')
 function canDragDrop($elem, onDrag) {
   let isGrabbing = false
 
-  $elem.addEventListener('mousedown', (e) => {
+  const mousedown = (e) => {
+    e.preventDefault()
     isGrabbing = true
     document.body.classList.add('is-dragging')
     $elem.classList.add('is-being-dragged')
-  })
-  $elem.addEventListener('mouseup', (e) => {
+  }
+
+  const mouseup = (e) => {
+    e.preventDefault()
     isGrabbing = false
     document.body.classList.remove('is-dragging')
     $elem.classList.remove('is-being-dragged')
-  })
-  window.addEventListener('mousemove', (e) => {
+  }
+
+  const mousemove = (e) => {
     if (!isGrabbing) return
-    const relativeX = e.pageX - $elem.offsetLeft - ($elem.clientWidth / 2)
-    const relativeY = e.pageY - $elem.offsetTop - ($elem.clientHeight / 2)
+    let touch = e.touches ? e.touches[0] : e
+    const relativeX = touch.pageX - $elem.offsetLeft - ($elem.clientWidth / 2)
+    const relativeY = touch.pageY - $elem.offsetTop - ($elem.clientHeight / 2)
     $elem.style.transform = `translate(${relativeX}px, ${relativeY}px)`
     onDrag && onDrag({
       relativeX,
       relativeY,
     })
-  })
+  }
+
+  $elem.addEventListener('mousedown', mousedown)
+  $elem.addEventListener('mouseup', mouseup)
+  window.addEventListener('mousemove', mousemove)
+
+  $elem.addEventListener('touchstart', mousedown)
+  $elem.addEventListener('touchend', mouseup)
+  window.addEventListener('touchmove', mousemove)
 }
 
 function canDoubleClick($elem, onDoubleClick) {
   let isWaitingForSecondClick = false
-  $elem.addEventListener('click', (e) => {
+  const doubleClick = (e) => {
+    e.preventDefault()
     if (isWaitingForSecondClick){
       onDoubleClick && onDoubleClick(e)
     }
@@ -35,7 +49,9 @@ function canDoubleClick($elem, onDoubleClick) {
     setTimeout(() => {
       isWaitingForSecondClick = false
     }, 200)
-  })
+  }
+  $elem.addEventListener('click', doubleClick)
+  $elem.addEventListener('touchstart', doubleClick)
 }
 
 function toRadians(angle) {

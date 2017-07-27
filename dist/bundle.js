@@ -148,7 +148,7 @@ module.exports = Ambience
 /* 1 */
 /***/ (function(module, exports) {
 
-module.exports = "<!DOCTYPE html>\n<html>\n<head>\n  <title></title>\n  <link rel=\"stylesheet\" type=\"text/css\" href=\"dist/styles.css\">\n</head>\n<body>\n<div id=\"help-modal\" class=\"\">\n  <div class=\"info\">\n    <span>Double click on any sound to activate or deactivate it.</span>\n    <span>Drag sounds around to change their position.</span>\n    <span>Drag the face to change your position.</span>\n    <span>Headphones are highly recommended!</span>\n  </div>\n  <div class=\"scrim\"></div>\n</div>\n\n<div id=\"you\">🙂</div>\n<div id=\"help\">❓</div>\n<script src=\"dist/bundle.js\"></script>\n<script src=\"http://localhost:35729/livereload.js\"></script>\n\n</body>\n</html>"
+module.exports = "<!DOCTYPE html>\n<html>\n<head>\n  <title></title>\n  <link rel=\"stylesheet\" type=\"text/css\" href=\"dist/styles.css\">\n  <meta name=\"viewport\" content=\"width=device-width, user-scalable=no, initial-scale=0.8\" />\n\n</head>\n<body>\n<div id=\"help-modal\" class=\"\">\n  <div class=\"info\">\n    <span>Double click on any sound to activate or deactivate it.</span>\n    <span>Drag sounds around to change their position.</span>\n    <span>Drag the face to change your position.</span>\n    <span>Headphones are highly recommended!</span>\n  </div>\n  <div class=\"scrim\"></div>\n</div>\n\n<div id=\"you\">🙂</div>\n<div id=\"help\">❓</div>\n<script src=\"dist/bundle.js\"></script>\n<script src=\"http://localhost:35729/livereload.js\"></script>\n\n</body>\n</html>"
 
 /***/ }),
 /* 2 */
@@ -187,31 +187,45 @@ const URLS = __webpack_require__(0)
 function canDragDrop($elem, onDrag) {
   let isGrabbing = false
 
-  $elem.addEventListener('mousedown', (e) => {
+  const mousedown = (e) => {
+    e.preventDefault()
     isGrabbing = true
     document.body.classList.add('is-dragging')
     $elem.classList.add('is-being-dragged')
-  })
-  $elem.addEventListener('mouseup', (e) => {
+  }
+
+  const mouseup = (e) => {
+    e.preventDefault()
     isGrabbing = false
     document.body.classList.remove('is-dragging')
     $elem.classList.remove('is-being-dragged')
-  })
-  window.addEventListener('mousemove', (e) => {
+  }
+
+  const mousemove = (e) => {
     if (!isGrabbing) return
-    const relativeX = e.pageX - $elem.offsetLeft - ($elem.clientWidth / 2)
-    const relativeY = e.pageY - $elem.offsetTop - ($elem.clientHeight / 2)
+    let touch = e.touches ? e.touches[0] : e
+    const relativeX = touch.pageX - $elem.offsetLeft - ($elem.clientWidth / 2)
+    const relativeY = touch.pageY - $elem.offsetTop - ($elem.clientHeight / 2)
     $elem.style.transform = `translate(${relativeX}px, ${relativeY}px)`
     onDrag && onDrag({
       relativeX,
       relativeY,
     })
-  })
+  }
+
+  $elem.addEventListener('mousedown', mousedown)
+  $elem.addEventListener('mouseup', mouseup)
+  window.addEventListener('mousemove', mousemove)
+
+  $elem.addEventListener('touchstart', mousedown)
+  $elem.addEventListener('touchend', mouseup)
+  window.addEventListener('touchmove', mousemove)
 }
 
 function canDoubleClick($elem, onDoubleClick) {
   let isWaitingForSecondClick = false
-  $elem.addEventListener('click', (e) => {
+  const doubleClick = (e) => {
+    e.preventDefault()
     if (isWaitingForSecondClick){
       onDoubleClick && onDoubleClick(e)
     }
@@ -219,7 +233,9 @@ function canDoubleClick($elem, onDoubleClick) {
     setTimeout(() => {
       isWaitingForSecondClick = false
     }, 200)
-  })
+  }
+  $elem.addEventListener('click', doubleClick)
+  $elem.addEventListener('touchstart', doubleClick)
 }
 
 function toRadians(angle) {
