@@ -1,100 +1,27 @@
 // require index.html so livereload will watch it
 const index = require('../../index.html') // eslint-disable-line no-unused-vars
 
-const { canDragDrop, calculateInitialPositions, canDoubleClick, toggleMute } = require('./utils')
-const URLS = require('./tracklist')
+const { mapSeries } = require('bluebird')
 require('whatwg-fetch')
-const audios = require('./data-store')
 
-const helpModal = require('./help')()
+const { canDragDrop, calculateInitialPositions, loadMp3 } = require('./utils')
+const { initalizeTrackElement, prepareTrackForPlayback, finishLoadingTrackElement } = require('./lifecycle')
 
-const audioCtx = new (window.AudioContext || window.webkitAudioContext)() // define audio context
+const APP_DATA = require('./data-store')
+const TRACK_LIST = require('./tracklist')
+const AUDIO_CONTEXT = require('./audio-context')
+
+require('./help')()
+
 const $player = document.getElementById('you')
-
-let sunglasses = false
-
-audioCtx.listener.setPosition(0, 0, 0);
-
-function prepareTrack(audioBuffer, trackName) {
-  const source = audioCtx.createBufferSource()
-  source.buffer = audioBuffer;
-
-  const panner = audioCtx.createPanner()
-  const gain = audioCtx.createGain()
-
-  const { x, z } = audios[trackName].position
-
-  panner.setPosition(x / 100, 0, z / 100)
-
-
-  // create analyser
-  const analyser = audioCtx.createAnalyser()
-  analyser.fftSize = 32
-  audios[trackName].analyser = {
-    instance: analyser,
-    dataArray: new Uint8Array(analyser.frequencyBinCount),
-  }
-  audios[trackName].gainNode = gain
-
-  source.connect(gain)
-  gain.connect(analyser)
-  analyser.connect(panner)
-  panner.connect(audioCtx.destination)
-
-  audios[trackName].panner = panner
-  audios[trackName].source = source
-  source.loop = true
-
-  if (Math.random() > 0.3) toggleMute(audios[trackName])
-
-  return source
-}
-
 canDragDrop($player, ({ relativeX, relativeY }) => {
-  audioCtx.listener.setPosition(relativeX / 100, 0, relativeY / 100)
+  AUDIO_CONTEXT.listener.setPosition(relativeX / 100, 0, relativeY / 100)
 })
 
-
-function createLoadingElement(trackName) {
-  const newDiv = document.createElement('div')
-  newDiv.classList.add('speaker')
-  newDiv.style.transform = `
-    translate(${audios[trackName].position.x}px, ${audios[trackName].position.z}px)
-    scale(${1.0})`
-
-  newDiv.innerHTML = '⏳'
-
-  audios[trackName].elem = newDiv
-  document.body.append(newDiv)
-  return Promise.resolve()
-}
-
-function createTrackElement(track) {
-  const trackName = track.track
-  const trackDiv = audios[trackName].elem
-  trackDiv.classList.add('speaker')
-  trackDiv.innerHTML = track.icon
-
-
-  canDragDrop(trackDiv, ({ relativeX, relativeY }) => {
-    audios[trackName].position = {
-      x: relativeX,
-      z: relativeY,
-    }
-    audios[trackName].panner.setPosition(relativeX / 100, 0, relativeY / 100)
-  })
-
-  canDoubleClick(trackDiv, (e) => {
-    toggleMute(audios[trackName])
-  })
-
-  return audios[trackName].source
-}
-
-
 function drawLoop() {
-  Object.keys(audios).forEach((trackName) => {
-    const audio = audios[trackName]
+  Object.keys(APP_DATA).forEach((trackName) => {
+    const audio = APP_DATA[trackName]
+    if (!audio.analyser) return
     audio.analyser.instance.getByteTimeDomainData(audio.analyser.dataArray)
     const max = Math.max.apply(null, audio.analyser.dataArray) / 128
 
@@ -107,42 +34,27 @@ function drawLoop() {
   }, 1000 / 60)
 }
 
-// Safari's decodeAudioData isn't a promise by default. use callback spec
-const decodePromise = (buffer) => new Promise((resolve, reject) => {
-  return audioCtx.decodeAudioData(buffer, (data, err)=>{
-    if (err) reject(err)
-    else resolve(data)
-  })
-})
-
-function loadMp3(url) {
-  return fetch(url)
-  .then(res => res.arrayBuffer())
-  .then(arrayBuffer => decodePromise(arrayBuffer))
-  .catch( err => console.log(err))
-}
-
-Promise.all(URLS.map((URL, i) => {
-  const trackName = URL.track
+drawLoop()
+mapSeries(TRACK_LIST, (TRACK_DATA, i) => {
+  const trackName = TRACK_DATA.track
   const { z, x } = calculateInitialPositions(i)
 
-  audios[trackName] = {
+  APP_DATA[trackName] = {
     elem: undefined,
     source: undefined,
+    panner: undefined,
+    gainNode: undefined,
     position: { z, x },
-    muted: false
+    muted: false,
   }
 
-  return createLoadingElement(trackName)
+  return initalizeTrackElement(trackName, i)
   .then(() => loadMp3(trackName))
-  .then(decodedBuffer => prepareTrack(decodedBuffer, trackName))
-  .then(res => createTrackElement(URL))
+  .then(decodedBuffer => prepareTrackForPlayback(decodedBuffer, trackName))
+  .then(res => finishLoadingTrackElement(TRACK_DATA))
+  .then(audioSource => audioSource.start())
   .catch(err => {
-    console.log('erorr')
+    console.log('error')
     console.log(err)
   })
-}))
-.then((audioSources) => {
-  audioSources.forEach(source => source.start())
-  drawLoop()
 })

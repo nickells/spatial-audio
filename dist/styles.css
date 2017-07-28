@@ -82,6 +82,11 @@ body {
 .speaker.is-being-dragged {
   cursor: -webkit-grabbing;
 }
-.speaker {
+#you.loading,
+.speaker.loading {
+  transition: 200ms ease-in-out;
+}
+#you.active,
+.speaker.active {
   transition: transform 50ms;
 }

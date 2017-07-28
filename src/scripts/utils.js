@@ -1,4 +1,5 @@
 const URLS = require('./tracklist')
+const AUDIO_CONTEXT = require('./audio-context')
 
 function canDragDrop($elem, onDrag) {
   let isGrabbing = false
@@ -19,7 +20,7 @@ function canDragDrop($elem, onDrag) {
 
   const mousemove = (e) => {
     if (!isGrabbing) return
-    let touch = e.touches ? e.touches[0] : e
+    const touch = e.touches ? e.touches[0] : e
     const relativeX = touch.pageX - $elem.offsetLeft - ($elem.clientWidth / 2)
     const relativeY = touch.pageY - $elem.offsetTop - ($elem.clientHeight / 2)
     $elem.style.transform = `translate(${relativeX}px, ${relativeY}px)`
@@ -80,11 +81,27 @@ function toggleMute(audioTrack) {
   }
 }
 
+// Safari's decodeAudioData isn't a promise by default. use callback spec
+const decodePromise = (buffer) => new Promise((resolve, reject) => {
+  return AUDIO_CONTEXT.decodeAudioData(buffer, (data, err)=>{
+    if (err) reject(err)
+    else resolve(data)
+  })
+})
+
+function loadMp3(url) {
+  return fetch(url)
+  .then(res => res.arrayBuffer())
+  .then(arrayBuffer => decodePromise(arrayBuffer))
+  .catch(err => console.error(err))
+}
+
 
 module.exports = {
   canDragDrop,
   toRadians,
   canDoubleClick,
   calculateInitialPositions,
-  toggleMute
+  toggleMute,
+  loadMp3
 }

@@ -26,9 +26,13 @@ body {
   &.is-being-dragged {
     cursor: -webkit-grabbing;
   }
+
+  &.loading {
+    // border: 12px solid red;
+    transition: 200ms ease-in-out;
+  }
+  &.active {
+    transition: transform 50ms;
+  }
 }
 
-
-.speaker {
-  transition: transform 50ms;
-}
