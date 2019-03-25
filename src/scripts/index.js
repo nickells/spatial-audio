@@ -52,9 +52,12 @@ mapSeries(TRACK_LIST, (TRACK_DATA, i) => {
   .then(() => loadMp3(trackName))
   .then(decodedBuffer => prepareTrackForPlayback(decodedBuffer, trackName))
   .then(res => finishLoadingTrackElement(TRACK_DATA))
-  .then(audioSource => audioSource.start())
+
   .catch(err => {
     console.log('error')
     console.log(err)
   })
+})
+.then(audiosources => {
+  audiosources.forEach(source => source.start())
 })

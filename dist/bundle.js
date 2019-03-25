@@ -91,66 +91,82 @@ const URLS = [
 ]
 
 const Ambience = [
-  {
-    track: 'ambience/Bird Ambience.mp3',
-    icon: '🐦',
-  },
-  {
-    track: 'ambience/Busy City Street.mp3',
-    icon: '🏙',
-  },
-  {
-    track: 'ambience/Campfire.mp3',
-    icon: '🔥',
-  },
-  {
-    track: 'ambience/Car Interior.mp3',
-    icon: '🚗',
-  },
-  {
-    track: 'ambience/Coffee Shop.mp3',
-    icon: '☕',
-  },
-  {
-    track: 'ambience/Electric Hum.mp3',
-    icon: '🔌',
-  },
-  {
-    track: 'ambience/Forest 1.mp3',
-    icon: '🌳',
-  },
-  {
-    track: 'ambience/Forest 2.mp3',
-    icon: '🏕',
-  },
-  {
-    track: 'ambience/Helicopter.mp3',
-    icon: '🚁',
-  },
-  {
-    track: 'ambience/Ocean Waves.mp3',
-    icon: '🌊',
-  },
-  // {
-  //   track: 'ambience/Plane.mp3',
-  //   icon: '🛩',
-  // },
-  {
-    track: 'ambience/Rumble.mp3',
-    icon: '💢',
-  },
-  {
-    track: 'ambience/Street Traffic.mp3',
-    icon: '🛣',
-  },
-  {
-    track: 'ambience/Thuderstorm.mp3',
-    icon: '⛈',
-  },
-  {
-    track: 'ambience/Windy Desert.mp3',
-    icon: '🌬',
-  },
+ {
+  track:'jazz/01_Kick.wav',
+  icon: '🥁',
+ },
+ {
+  track:'jazz/02_Snare.wav',
+  icon: '🥁',
+ },
+ {
+  track:'jazz/03_Overhead.wav',
+  icon: '🥁',
+ },
+ {
+  track:'jazz/04_BassDI.wav',
+  icon: '🐟',
+ },
+ {
+  track:'jazz/05_ElecGtr.wav',
+  icon: '🎸',
+ },
+ {
+  track:'jazz/06_Piano.wav',
+  icon: '🎹',
+ },
+ {
+  track:'jazz/07_Trumpet1.wav',
+  icon: '🎺',
+ },
+ {
+  track:'jazz/08_Trumpet2.wav',
+  icon: '🎺',
+ },
+ {
+  track:'jazz/09_Trumpet3.wav',
+  icon: '🎺',
+ },
+ {
+  track:'jazz/10_Trumpet4.wav',
+  icon: '🎺',
+ },
+ {
+  track:'jazz/11_SaxAlto01.wav',
+  icon: '🎷',
+ },
+ {
+  track:'jazz/12_SaxAlto02.wav',
+  icon: '🎷',
+ },
+ {
+  track:'jazz/13_SaxTenor01.wav',
+  icon: '🎷',
+ },
+ {
+  track:'jazz/14_SaxTenor02.wav',
+  icon: '🎷',
+ },
+ {
+  track:'jazz/15_SaxBaritone.wav',
+  icon: '🎷',
+ },
+ {
+  track:'jazz/16_Trombone1.wav',
+  icon: '🍖',
+ },
+ {
+  track:'jazz/17_Trombone2.wav',
+  icon: '🍖',
+ },
+ {
+  track:'jazz/18_Trombone3.wav',
+  icon: '🍖',
+ },
+ {
+  track:'jazz/19_TromboneBass.wav',
+  icon: '🍖',
+ },
 ]
 
 module.exports = Ambience
@@ -6125,7 +6141,7 @@ module.exports = ret;
 /* 7 */
 /***/ (function(module, exports) {
 
-module.exports = "<!DOCTYPE html>\n<html>\n<head>\n  <title></title>\n  <link rel=\"stylesheet\" type=\"text/css\" href=\"dist/styles.css\">\n  <meta name=\"viewport\" content=\"width=device-width, user-scalable=no, initial-scale=0.8\" />\n\n</head>\n<body>\n<div id=\"help-modal\" class=\"\">\n  <div class=\"info\">\n    <span>Double click on any sound to activate or deactivate it.</span>\n    <span>Drag sounds around to change their position.</span>\n    <span>Drag the face to change your position.</span>\n    <span>Headphones are highly recommended!</span>\n  </div>\n  <div class=\"scrim\"></div>\n</div>\n\n<div id=\"you\">🙂</div>\n<div id=\"help\">❓</div>\n<script src=\"dist/bundle.js\"></script>\n<script src=\"http://localhost:35729/livereload.js\"></script>\n\n</body>\n</html>"
+module.exports = "<!DOCTYPE html>\n<html>\n<head>\n  <title></title>\n  <link rel=\"stylesheet\" type=\"text/css\" href=\"dist/styles.css\">\n  <meta name=\"viewport\" content=\"width=device-width, user-scalable=no, initial-scale=0.8\" />\n\n</head>\n<body>\n<div id=\"help-modal\" class=\"\">\n  <div class=\"info\">\n    <span>Double click on any sound to activate or deactivate it.</span>\n    <span>Drag sounds around to change their position.</span>\n    <span>Drag the face to change your position.</span>\n    <span>Headphones are highly recommended!</span>\n  </div>\n  <div class=\"scrim\"></div>\n</div>\n\n<div id=\"you\">😎</div>\n<div id=\"help\">❓</div>\n<script src=\"dist/bundle.js\"></script>\n<script src=\"http://localhost:35729/livereload.js\"></script>\n\n</body>\n</html>"
 
 /***/ }),
 /* 8 */
@@ -6665,7 +6681,7 @@ function prepareTrackForPlayback(audioBuffer, trackName) {
   APP_DATA[trackName].source = source
   source.loop = true
 
-  if (Math.random() > 0.3) toggleMute(APP_DATA[trackName])
+  // if (Math.random() > 0.3) toggleMute(APP_DATA[trackName])
 
   return source
 }
@@ -7017,11 +7033,14 @@ mapSeries(TRACK_LIST, (TRACK_DATA, i) => {
   .then(() => loadMp3(trackName))
   .then(decodedBuffer => prepareTrackForPlayback(decodedBuffer, trackName))
   .then(res => finishLoadingTrackElement(TRACK_DATA))
-  .then(audioSource => audioSource.start())
+
   .catch(err => {
     console.log('error')
     console.log(err)
   })
+})
+.then(audiosources => {
+  audiosources.forEach(source => source.start())
 })
 
 
