@@ -6747,7 +6747,7 @@ function prepareTrackForPlayback(audioBuffer, trackName) {
   APP_DATA[trackName].source = source
   source.loop = true
 
-  // if (Math.random() > 0.3) toggleMute(APP_DATA[trackName])
+  if (Math.random() > 0.3 && !window.location.search.includes('jazz')) toggleMute(APP_DATA[trackName])
 
   return source
 }
