@@ -234,7 +234,7 @@ const Ambience = [
 ]
 
 
-module.exports = Ambience
+module.exports = window.location.search.includes('jazz') ? Jazz : Ambience
 
 
 /***/ }),
@@ -7076,9 +7076,7 @@ function drawLoop() {
 
     audio.elem.style.transform = `translate3d(${x}px, ${y}px, 0px) scale(${Math.max(max, 0.8)})`
   })
-  setTimeout(() => {
-    requestAnimationFrame(drawLoop);
-  }, 1000 / 60)
+  requestAnimationFrame(drawLoop)
 }
 
 drawLoop()
@@ -7095,11 +7093,15 @@ mapSeries(TRACK_LIST, (TRACK_DATA, i) => {
     muted: false,
   }
 
+  const time = performance.now()
   return initalizeTrackElement(trackName, i)
   .then(() => loadMp3(trackName))
   .then(decodedBuffer => prepareTrackForPlayback(decodedBuffer, trackName))
   .then(res => finishLoadingTrackElement(TRACK_DATA))
-  .then(track => track.start())
+  .then((track) => {
+    if (!window.location.search.includes('jazz')) track.start()
+    return track
+  })
 
   .catch((err) => {
     console.log('error')
@@ -7107,7 +7109,9 @@ mapSeries(TRACK_LIST, (TRACK_DATA, i) => {
   })
 })
 .then((audiosources) => {
-  // audiosources.forEach(source => source.start())
+  if (window.location.search.includes('jazz')) {
+    audiosources.forEach(source => source.start())
+  }
 })
 
 

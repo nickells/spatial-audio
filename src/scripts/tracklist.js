@@ -151,4 +151,4 @@ const Ambience = [
 ]
 
 
-module.exports = Ambience
+module.exports = window.location.search.includes('jazz') ? Jazz : Ambience
